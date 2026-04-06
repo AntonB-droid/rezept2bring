@@ -18,7 +18,7 @@ python-multipart==0.0.20
 aiohttp==3.11.11
 Pillow==11.1.0
 pytesseract==0.3.13
-bring-api>=4.1.0
+bring-api>=1.0.0
 E
 cat > Dockerfile <<'E'
 FROM python:3.12-slim
