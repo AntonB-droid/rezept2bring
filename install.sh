@@ -22,26 +22,26 @@ bring-api>=4.1.0
 E
 cat > Dockerfile <<'E'
 FROM python:3.12-slim
-RUN apt-get update && apt-get install -y –no-install-recommends tesseract-ocr tesseract-ocr-deu libglib2.0-0 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-deu libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install –no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 COPY static/ static/
 EXPOSE 8585
-CMD ["uvicorn", "app:app", "–host", "0.0.0.0", "–port", "8585"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8585"]
 E
 cat > docker-compose.yml <<'E'
 version: "3.8"
 services:
-rezept2bring:
-build: .
-container_name: rezept2bring
-restart: unless-stopped
-ports:
-- "8585:8585"
-env_file:
-- .env
+  rezept2bring:
+    build: .
+    container_name: rezept2bring
+    restart: unless-stopped
+    ports:
+      - "8585:8585"
+    env_file:
+      - .env
 E
 cat > app.py <<'PYEOF'
 import os,re,logging
@@ -106,8 +106,8 @@ if len(n)<2 or re.match(r"^[\d\s.,]+$",n)or n.lower()in SK:return None
 return{"name":n[0].upper()+n[1:],"amount":a}
 def ocr(b):
 img=pimg(b)
-try:raw=pytesseract.image_to_string(img,config="–oem 3 –psm 6 -l deu+eng")
-except:raw=pytesseract.image_to_string(img,config="–oem 3 –psm 6")
+try:raw=pytesseract.image_to_string(img,config="--oem 3 --psm 6 -l deu+eng")
+except:raw=pytesseract.image_to_string(img,config="--oem 3 --psm 6")
 L.info(f"OCR({len(raw)}):\n{raw[:300]}")
 res,seen,ins=[],set(),False
 for line in raw.strip().split("\n"):
@@ -156,7 +156,7 @@ cat > static/index.html <<'HTEOF'
 
 HTEOF
 echo "[*] Baue Container…"
-docker compose up -d –build
+docker compose up -d --build
 echo ""
 echo "[OK] Rezept2Bring laeuft!"
 IP=$(hostname -I 2>/dev/null | awk '{print $1}')
