@@ -60,95 +60,95 @@ BL=os.environ.get("BRING_LIST_NAME","Einkaufsliste")
 logging.basicConfig(level=logging.INFO)
 L=logging.getLogger("r2b")
 class BW:
-def **init**(s,e,p):s.email,s.password,s.bring,s._s,s.ok=e,p,None,None,False
-async def login(s):
-s._s=aiohttp.ClientSession();s.bring=Bring(s._s,s.email,s.password)
-await s.bring.login();s.ok=True;L.info("Bring! OK")
-async def glists(s):return(await s.bring.load_lists()).get("lists",[])
-async def flist(s,n):
-for l in await s.glists():
-if l["name"].lower()==n.lower():return l["listUuid"]
-ls=await s.glists()
-if ls:return ls[0]["listUuid"]
-raise Exception("Keine Liste")
-async def save(s,u,items):
-bi=[{"itemId":i["name"],"spec":i.get("amount","")}for i in items]
-if bi:await s.bring.batch_update_list(u,bi,BringItemOperation.ADD)
-return[{"item":i["itemId"],"status":"ok"}for i in bi]
-async def close(s):
-if s._s:await s._s.close()
+    def __init__(s,e,p):s.email,s.password,s.bring,s._s,s.ok=e,p,None,None,False
+    async def login(s):
+        s._s=aiohttp.ClientSession();s.bring=Bring(s._s,s.email,s.password)
+        await s.bring.login();s.ok=True;L.info("Bring! OK")
+    async def glists(s):return(await s.bring.load_lists()).get("lists",[])
+    async def flist(s,n):
+        for l in await s.glists():
+            if l["name"].lower()==n.lower():return l["listUuid"]
+        ls=await s.glists()
+        if ls:return ls[0]["listUuid"]
+        raise Exception("Keine Liste")
+    async def save(s,u,items):
+        bi=[{"itemId":i["name"],"spec":i.get("amount","")}for i in items]
+        if bi:await s.bring.batch_update_list(u,bi,BringItemOperation.ADD)
+        return[{"item":i["itemId"],"status":"ok"}for i in bi]
+    async def close(s):
+        if s._s:await s._s.close()
 U=r"(?:g|kg|ml|l|cl|dl|EL|TL|Stk|Prise|Bund|Beutel|Dose|Dosen|Pkg|Becher|Scheiben|Zehen|Handvoll|Tassen|Pck)"
 SK={"zubereitung","zutaten","portionen","personen","anleitung","tipp","schritt","minuten","stunden","rezept","kalorien","kcal","vorbereitung","garzeit","backzeit","kochzeit","arbeitszeit","gesamtzeit","ruhezeit","servings","preparation","instructions","directions","nutrition","calories","werbung","anzeige","foto","bild","quelle"}
 ES={"zubereitung","anleitung","so geht","schritt 1","step 1","instructions","directions","den ofen","backofen","vorheizen"}
 NR=[r"https?://",r"www.",r".com\b",r".de\b",r"@",r"\bbank\b",r"\bVR[\s-]",r"\bsparkasse\b",r"\bgmbh\b",r"\bverlag\b",r"\bmagazin\b",r"\bfoto\b",r"\bshutterstock\b",r"\bcookie\b",r"\bdatenschutz\b",r"\bimpressum\b",r"\bnewsletter\b",r"\bpinterest\b",r"\bfacebook\b",r"\binstagram\b",r"\btwitter\b",r"\btiktok\b",r"\byoutube\b",r"\btreaty\b",r"\bkitchen\b"]
 def pimg(b):
-img=Image.open(BytesIO(b))
-if img.mode!="RGB":img=img.convert("RGB")
-w,h=img.size
-if w<1000:s=1500/w;img=img.resize((int(w*s),int(h*s)),Image.LANCZOS)
-img=ImageEnhance.Contrast(img).enhance(1.5);img=ImageEnhance.Sharpness(img).enhance(2.0)
-img=img.convert("L");img=ImageEnhance.Contrast(img).enhance(1.8);return img
+    img=Image.open(BytesIO(b))
+    if img.mode!="RGB":img=img.convert("RGB")
+    w,h=img.size
+    if w<1000:s=1500/w;img=img.resize((int(w*s),int(h*s)),Image.LANCZOS)
+    img=ImageEnhance.Contrast(img).enhance(1.5);img=ImageEnhance.Sharpness(img).enhance(2.0)
+    img=img.convert("L");img=ImageEnhance.Contrast(img).enhance(1.8);return img
 def noi(l):return any(re.search(p,l.lower())for p in NR)
 def pline(l):
-l=l.strip()
-if not l or len(l)<2:return None
-a,n="",l
-m=re.match(rf"^([\d/,.-]+\s*{U})\s+(.+)$",l,re.I)
-if m:a,n=m.group(1).strip(),m.group(2).strip()
-else:
-m=re.match(r"^([\d/,.-]+)\s+(.+)$",l)
-if m:a,n=m.group(1).strip(),m.group(2).strip()
-else:
-m=re.match(r"^(etwas|evtl.?|optional|ca.?)\s+(.+)$",l,re.I)
-if m:a,n=m.group(1).strip(),m.group(2).strip()
-n=re.sub(r"\s*(.*?)\s*"," ",n).strip(" ,;.-")
-if len(n)<2 or re.match(r"^[\d\s.,]+$",n)or n.lower()in SK:return None
-return{"name":n[0].upper()+n[1:],"amount":a}
+    l=l.strip()
+    if not l or len(l)<2:return None
+    a,n="",l
+    m=re.match(rf"^([\d/,.-]+\s*{U})\s+(.+)$",l,re.I)
+    if m:a,n=m.group(1).strip(),m.group(2).strip()
+    else:
+        m=re.match(r"^([\d/,.-]+)\s+(.+)$",l)
+        if m:a,n=m.group(1).strip(),m.group(2).strip()
+        else:
+            m=re.match(r"^(etwas|evtl.?|optional|ca.?)\s+(.+)$",l,re.I)
+            if m:a,n=m.group(1).strip(),m.group(2).strip()
+    n=re.sub(r"\s*(.*?)\s*"," ",n).strip(" ,;.-")
+    if len(n)<2 or re.match(r"^[\d\s.,]+$",n)or n.lower()in SK:return None
+    return{"name":n[0].upper()+n[1:],"amount":a}
 def ocr(b):
-img=pimg(b)
-try:raw=pytesseract.image_to_string(img,config="--oem 3 --psm 6 -l deu+eng")
-except:raw=pytesseract.image_to_string(img,config="--oem 3 --psm 6")
-L.info(f"OCR({len(raw)}):\n{raw[:300]}")
-res,seen,ins=[],set(),False
-for line in raw.strip().split("\n"):
-line=line.strip()
-if not line or len(line)<2:continue
-lo=line.lower()
-if re.search(r"\bzutaten\b",lo)and len(line)<40:ins=True;continue
-if any(e in lo for e in ES)and ins:break
-if noi(line)or any(s in lo for s in SK)or len(line)>80:continue
-if re.match(r"^[\d\s.,-:|]+$",line):continue
-i=pline(line)
-if i and i["name"].lower()not in seen:seen.add(i["name"].lower());res.append(i)
-return res
+    img=pimg(b)
+    try:raw=pytesseract.image_to_string(img,config="--oem 3 --psm 6 -l deu+eng")
+    except:raw=pytesseract.image_to_string(img,config="--oem 3 --psm 6")
+    L.info(f"OCR({len(raw)}):\n{raw[:300]}")
+    res,seen,ins=[],set(),False
+    for line in raw.strip().split("\n"):
+        line=line.strip()
+        if not line or len(line)<2:continue
+        lo=line.lower()
+        if re.search(r"\bzutaten\b",lo)and len(line)<40:ins=True;continue
+        if any(e in lo for e in ES)and ins:break
+        if noi(line)or any(s in lo for s in SK)or len(line)>80:continue
+        if re.match(r"^[\d\s.,-:|]+$",line):continue
+        i=pline(line)
+        if i and i["name"].lower()not in seen:seen.add(i["name"].lower());res.append(i)
+    return res
 bw=None
 @asynccontextmanager
 async def lifespan(a):
-global bw
-if BE and BP:
-bw=BW(BE,BP)
-try:await bw.login()
-except Exception as e:L.error(f"Bring!:{e}");bw=None
-yield
-if bw:await bw.close()
+    global bw
+    if BE and BP:
+        bw=BW(BE,BP)
+        try:await bw.login()
+        except Exception as e:L.error(f"Bring!:{e}");bw=None
+    yield
+    if bw:await bw.close()
 app=FastAPI(title="Rezept2Bring",lifespan=lifespan)
 @app.post("/api/extract")
 async def extract(file:UploadFile=File(...)):return{"ingredients":ocr(await file.read())}
 @app.post("/api/bring/push")
 async def push(req:Request):
-if not bw or not bw.ok:raise HTTPException(503,"Bring! nicht verbunden.")
-body=await req.json();items=body.get("items",[]);ln=body.get("list_name",BL)
-try:u=await bw.flist(ln);r=await bw.save(u,items);return{"success":True,"results":r,"list":ln}
-except Exception as e:L.error(f"Bring!:{e}");raise HTTPException(500,str(e))
+    if not bw or not bw.ok:raise HTTPException(503,"Bring! nicht verbunden.")
+    body=await req.json();items=body.get("items",[]);ln=body.get("list_name",BL)
+    try:u=await bw.flist(ln);r=await bw.save(u,items);return{"success":True,"results":r,"list":ln}
+    except Exception as e:L.error(f"Bring!:{e}");raise HTTPException(500,str(e))
 @app.get("/api/bring/lists")
 async def lists():
-if not bw or not bw.ok:raise HTTPException(503,"Bring!")
-return{"lists":[{"name":l["name"],"uuid":l["listUuid"]}for l in await bw.glists()]}
+    if not bw or not bw.ok:raise HTTPException(503,"Bring!")
+    return{"lists":[{"name":l["name"],"uuid":l["listUuid"]}for l in await bw.glists()]}
 @app.get("/api/status")
 async def status():return{"bring_connected":bw is not None and bw.ok,"ocr_engine":"tesseract"}
 @app.get("/",response_class=HTMLResponse)
 async def idx():
-with open("static/index.html")as f:return f.read()
+    with open("static/index.html")as f:return f.read()
 PYEOF
 cat > static/index.html <<'HTEOF'
 
